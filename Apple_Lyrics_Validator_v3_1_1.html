@@ -1,0 +1,2953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lyrics Validator v3.1.1</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d8dee8;
+      --input: #ffffff;
+
+      --primary: #4f6bed;
+      --primary-soft: rgba(79, 107, 237, 0.1);
+      --primary-dark: #3d56ca;
+
+      --success: #2fbf71;
+      --success-soft: rgba(47, 191, 113, 0.12);
+
+      --warning: #f5a524;
+      --warning-soft: rgba(245, 165, 36, 0.14);
+
+      --danger: #e5484d;
+      --danger-soft: rgba(229, 72, 77, 0.12);
+
+      --info: #4f6bed;
+      --info-soft: rgba(79, 107, 237, 0.1);
+
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --focus-ring: 0 0 0 3px rgba(79, 107, 237, 0.18);
+
+      --output-tool-bg: rgba(47, 191, 113, 0.1);
+      --output-tool-bar: #2fbf71;
+      --output-user-bg: rgba(245, 165, 36, 0.12);
+      --output-user-bar: #f5a524;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f141c;
+      --panel: #161d27;
+      --panel-soft: #101722;
+      --text: #e5e7eb;
+      --muted: #98a2b3;
+      --border: #2e3948;
+      --input: #0d131c;
+      --shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+      --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.18);
+
+      --primary: #7c94ff;
+      --primary-soft: rgba(124, 148, 255, 0.14);
+      --primary-dark: #617cf6;
+
+      --success-soft: rgba(47, 191, 113, 0.18);
+      --warning-soft: rgba(245, 165, 36, 0.18);
+      --danger-soft: rgba(229, 72, 77, 0.18);
+      --info-soft: rgba(124, 148, 255, 0.14);
+
+      --output-tool-bg: rgba(47, 191, 113, 0.14);
+      --output-user-bg: rgba(245, 165, 36, 0.16);
+    }
+
+    [data-theme="contrast"] {
+      --bg: #000000;
+      --panel: #0a0a0a;
+      --panel-soft: #121212;
+      --text: #ffffff;
+      --muted: #c9d1d9;
+      --border: #4a5568;
+      --input: #000000;
+      --shadow: none;
+      --focus-ring: 0 0 0 3px rgba(0, 194, 255, 0.25);
+
+      --primary: #00c2ff;
+      --primary-soft: rgba(0, 194, 255, 0.14);
+      --primary-dark: #00a5d9;
+
+      --success: #3ddc84;
+      --warning: #ffb020;
+      --danger: #ff5d5d;
+
+      --output-tool-bg: rgba(61, 220, 132, 0.16);
+      --output-tool-bar: #3ddc84;
+      --output-user-bg: rgba(255, 176, 32, 0.16);
+      --output-user-bar: #ffb020;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      padding: 12px;
+    }
+
+    .app {
+      width: min(1880px, calc(100vw - 24px));
+      max-width: none;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand img {
+      height: 28px;
+      width: auto;
+      display: block;
+      flex: 0 0 auto;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: nowrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .control-group label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .segmented {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-soft);
+      overflow: hidden;
+    }
+
+    .segmented button {
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      border-radius: 0;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      min-width: auto;
+    }
+
+    .segmented button:hover:not(:disabled) {
+      transform: none;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .segmented button.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    select,
+    textarea,
+    input[type="text"],
+    button {
+      font: inherit;
+    }
+
+    select,
+    textarea,
+    input[type="text"] {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--input);
+      color: var(--text);
+      outline: none;
+    }
+
+    select:focus,
+    textarea:focus,
+    input[type="text"]:focus {
+      box-shadow: var(--focus-ring);
+      border-color: var(--primary);
+    }
+
+    select {
+      min-width: 176px;
+      padding: 9px 40px 9px 12px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><path fill='%23808a98' d='M4.47 6.97a.75.75 0 0 1 1.06 0L8 9.44l2.47-2.47a.75.75 0 1 1 1.06 1.06l-3 3a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 0 1 0-1.06z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px 16px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 360px;
+      resize: vertical;
+      padding: 14px;
+      line-height: 1.45;
+      font-size: 14px;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    input[type="text"] {
+      padding: 8px 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.18s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    .btn-primary.alt {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-primary.small {
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 18px;
+      padding: 18px;
+      align-items: start;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      min-width: 0;
+    }
+
+    body[data-layout="stacked"] .workspace {
+      grid-template-columns: 1fr;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .card-2 {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 525px;
+    }
+
+    .card {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .card h2,
+    .card h3,
+    .card h4 {
+      margin: 0 0 10px 0;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .actions-row > * {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .status-box {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--panel);
+    }
+
+    .status-box.ready {
+      background: var(--info-soft);
+      border-color: rgba(79, 107, 237, 0.24);
+    }
+
+    .status-box.review {
+      background: var(--warning-soft);
+      border-color: rgba(245, 165, 36, 0.28);
+    }
+
+    .status-box.fail {
+      background: var(--danger-soft);
+      border-color: rgba(229, 72, 77, 0.28);
+    }
+
+    .status-box.pass {
+      background: var(--success-soft);
+      border-color: rgba(47, 191, 113, 0.28);
+    }
+
+    .status-name {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .status-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .status-ready .status-name { color: var(--info); }
+    .status-review .status-name { color: var(--warning); }
+    .status-fail .status-name { color: var(--danger); }
+    .status-pass .status-name { color: var(--success); }
+
+    .summary-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mini-badge {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      font-size: 12px;
+      font-weight: 700;
+      width: 100%;
+      text-align: center;
+    }
+
+    .progress-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .progress-track {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(148, 163, 184, 0.2);
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.2s ease;
+    }
+
+    .output-view {
+      min-height: 320px;
+      max-height: 650px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--input);
+      padding: 10px;
+      font-family: Consolas, "Courier New", monospace;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .output-empty {
+      color: var(--muted);
+      padding: 6px;
+    }
+
+    .output-line {
+      position: relative;
+      padding: 2px 8px 2px 12px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 2px;
+    }
+
+    .output-line.changed-tool {
+      background: var(--output-tool-bg);
+    }
+
+    .output-line.changed-user {
+      background: var(--output-user-bg);
+    }
+
+    .output-line.changed-tool::before,
+    .output-line.changed-user::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 2px;
+      bottom: 2px;
+      width: 4px;
+      border-radius: 999px;
+    }
+
+    .output-line.changed-tool::before {
+      background: var(--output-tool-bar);
+    }
+
+    .output-line.changed-user::before {
+      background: var(--output-user-bar);
+    }
+
+    .legend {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .legend-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .legend-dot.green { background: var(--success); }
+    .legend-dot.yellow { background: var(--warning); }
+
+    .tooltip {
+      border-bottom: 1px dashed var(--muted);
+      cursor: help;
+    }
+
+    .section-details {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .section-details:first-of-type {
+      margin-top: 0;
+    }
+
+    .section-details summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 13px 14px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel);
+    }
+
+    .section-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .section-title-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      flex: 0 0 auto;
+    }
+
+    .count-badge.hidden {
+      display: none;
+    }
+
+    .count-badge.error { background: var(--danger); }
+    .count-badge.warning { background: var(--warning); color: #1f2937; }
+    .count-badge.suggestion { background: var(--info); }
+
+    .count {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .section-body {
+      padding: 0 14px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .issue {
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-soft);
+      padding: 12px;
+    }
+
+    .issue.error { border-left-color: var(--danger); }
+    .issue.warning { border-left-color: var(--warning); }
+    .issue.suggestion { border-left-color: var(--info); }
+    .issue.auto-fixed { border-left-color: var(--success); }
+    .issue.ignored { border-left-color: var(--muted); opacity: 0.96; }
+
+    .issue-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .issue-title {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .issue-title strong {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .issue-meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .issue-preview {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: var(--input);
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      color: var(--muted);
+      word-break: break-word;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .issue-preview:hover {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--text);
+    }
+
+    .issue-note {
+      display: inline-flex;
+      width: fit-content;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: var(--success-soft);
+      color: var(--success);
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid rgba(47, 191, 113, 0.28);
+    }
+
+    .issue-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .issue-actions button {
+      padding: 8px 10px;
+      min-width: auto;
+      font-size: 12px;
+      border-radius: 10px;
+      flex: 0 0 auto;
+    }
+
+    .replace-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px 6px;
+      min-width: 180px;
+    }
+
+    .replace-field input {
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      min-width: 90px;
+      width: 140px;
+      padding: 4px 2px;
+      font-size: 12px;
+      box-shadow: none !important;
+    }
+
+    .replace-clear {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .replace-clear:hover {
+      background: var(--border);
+      transform: none !important;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .active-issues-card.pass-tint {
+      background: var(--success-soft);
+      border-color: rgba(47, 191, 113, 0.24);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat .n {
+      display: block;
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stat .l {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .footer-note {
+      padding: 0 16px 16px 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .advanced {
+      margin-top: 10px;
+    }
+
+    .advanced summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .advanced-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 1280px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .brand {
+        justify-content: center;
+      }
+
+      .top-controls {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .control-group {
+        flex: 1 1 240px;
+        justify-content: center;
+      }
+
+      .advanced-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 10px;
+      }
+
+      .app {
+        width: calc(100vw - 20px);
+      }
+
+      .layout {
+        padding: 10px;
+      }
+
+      .workspace {
+        gap: 10px;
+      }
+
+      .actions-row > * {
+        min-width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .replace-field {
+        width: 100%;
+      }
+
+      .replace-field input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body data-theme="light" data-layout="side">
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <img id="logo" src="lyricsvalidator-logo.svg" alt="Lyrics Validator logo" onerror="this.style.display='none'">
+        <div class="brand-title">Lyrics Validator</div>
+      </div>
+
+      <div class="top-controls">
+        <div class="control-group">
+          <label for="presetSelect">Preset</label>
+          <select id="presetSelect">
+            <option value="apple-strict" selected>Apple Strict (recommended)</option>
+            <option value="apple-basic">Apple Basic</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="themeSelect">Theme</label>
+          <select id="themeSelect">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="contrast">High Contrast</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>Layout</label>
+          <div class="segmented" aria-label="Workspace layout mode">
+            <button type="button" id="layoutSideBtn" class="active">Side by side</button>
+            <button type="button" id="layoutStackBtn">Stacked</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="workspace">
+        <div class="col">
+          <div class="card-2">
+            <div class="toolbar">
+              <h2 style="margin:0;">Input</h2>
+              <div class="meta">
+                <span id="inputLinesMeta">0 lines</span>
+                <span id="inputWordsMeta">0 words</span>
+                <span id="lastValidatedMeta">No active session</span>
+              </div>
+            </div>
+
+            <textarea id="inputText" placeholder="Paste lyrics"></textarea>
+
+            <div class="actions-row">
+              <button class="btn-primary" id="validateBtn">Validate lyrics</button>
+              <button class="btn-outline" id="clearBtn">Clear & next</button>
+            </div>
+
+            <details class="advanced">
+              <summary>Advanced</summary>
+
+              <div class="advanced-grid">
+                <div class="field">
+                  <label for="sourceCleanupSelect">Source cleanup preset</label>
+                  <select id="sourceCleanupSelect">
+                    <option value="none" selected>None</option>
+                    <option value="word">Copied from Word</option>
+                    <option value="pdf">Copied from PDF</option>
+                    <option value="email">Copied from email</option>
+                    <option value="excel">Copied from Excel</option>
+                    <option value="web">Copied from web</option>
+                    <option value="cms">Copied from CMS / HTML</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Description</label>
+                  <div class="muted" style="font-size:13px; line-height:1.5;">
+                    Source cleanup presets apply technical normalization based on where the text was copied from.
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card-2">
+            <div class="toolbar">
+              <h2 style="margin:0;">Output</h2>
+              <div class="meta">
+                <span id="outputLinesMeta">0 lines</span>
+                <span id="outputWordsMeta">0 words</span>
+              </div>
+            </div>
+
+            <div id="outputView" class="output-view">
+              <div class="output-empty">Validated output will appear here.</div>
+            </div>
+
+            <div class="legend">
+              <div class="legend-row">
+                <span class="legend-dot green"></span>
+                <span
+                  class="tooltip"
+                  title="Auto-fixes include spacing cleanup, empty line reduction, section label removal, basic punctuation cleanup, and unicode or character normalization.">
+                  Green — content changes applied by tools (excluding auto-fixes)
+                </span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot yellow"></span>
+                <span>Yellow — lines affected by manual input edits</span>
+              </div>
+            </div>
+
+            <div class="actions-row">
+              <button class="btn-secondary" id="copyOutputBtn">Copy output</button>
+              <button class="btn-outline" id="copyReportBtn">Copy report</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="card">
+          <div id="statusBox" class="status-box ready status-ready">
+            <div class="status-name" id="statusName">Ready</div>
+            <div class="status-desc" id="statusDesc">Paste lyrics and start validation.</div>
+          </div>
+
+          <div class="summary-inline" style="margin-top:12px;">
+            <span class="mini-badge" id="summaryCountsBadge">0 Errors · 0 Warnings · 0 Suggestions</span>
+          </div>
+
+          <div class="progress-wrap" style="margin-top:12px;">
+            <div class="progress-label">
+              <span>Validation completion</span>
+              <strong id="progressPercent">0%</strong>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="actions-row" style="margin-top:0;">
+            <button class="btn-primary small" id="applySafeFixesBtn" disabled title="Available after validation">Apply safe fixes</button>
+          </div>
+          <div class="muted" style="margin-top:10px;font-size:13px;">
+            Speed up output cleanup but do not automatically replace manual review.
+          </div>
+        </div>
+
+        <div class="card active-issues-card" id="activeIssuesCard">
+          <h3>Active issues</h3>
+
+          <details class="section-details" id="errorsSection" open>
+            <summary>
+              <span class="section-title-row">
+                <span>Errors</span>
+                <span class="count-badge error hidden" id="errorsCountBadge">0</span>
+              </span>
+            </summary>
+            <div class="section-body" id="errorsList">
+              <div class="muted">No active errors.</div>
+            </div>
+          </details>
+
+          <details class="section-details" id="warningsSection" open>
+            <summary>
+              <span class="section-title-row">
+                <span>Warnings</span>
+                <span class="count-badge warning hidden" id="warningsCountBadge">0</span>
+              </span>
+            </summary>
+            <div class="section-body" id="warningsList">
+              <div class="muted">No active warnings.</div>
+            </div>
+          </details>
+
+          <details class="section-details" id="suggestionsSection" open>
+            <summary>
+              <span class="section-title-row">
+                <span>Suggestions</span>
+                <span class="count-badge suggestion hidden" id="suggestionsCountBadge">0</span>
+              </span>
+            </summary>
+            <div class="section-body" id="suggestionsList">
+              <div class="muted">No active suggestions.</div>
+            </div>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3>Resolved issues</h3>
+
+          <details class="section-details" id="autofixedSection">
+            <summary>
+              <span>Auto-fixed</span>
+              <span class="count" id="autofixedCountLabel">0</span>
+            </summary>
+            <div class="section-body" id="autofixedList">
+              <div class="muted">No auto-fixed issues in this session.</div>
+            </div>
+          </details>
+
+          <details class="section-details" id="ignoredSection">
+            <summary>
+              <span>Ignored</span>
+              <span class="count" id="ignoredCountLabel">0</span>
+            </summary>
+            <div class="section-body" id="ignoredList">
+              <div class="muted">No ignored issues in this session.</div>
+            </div>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3>Stats</h3>
+          <div class="stats-grid">
+            <div class="stat">
+              <span class="n" id="statLabels">0</span>
+              <span class="l">Labels removed</span>
+            </div>
+            <div class="stat">
+              <span class="n" id="statWhitespace">0</span>
+              <span class="l">Whitespace cleanups</span>
+            </div>
+            <div class="stat">
+              <span class="n" id="statAuto">0</span>
+              <span class="l">Auto-fixed</span>
+            </div>
+            <div class="stat">
+              <span class="n" id="statIgnored">0</span>
+              <span class="l">Ignored</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      &copy; 2026 Bartosz Prabucki
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = {
+      theme: "lyrics_validator_theme_v311",
+      layout: "lyrics_validator_workspace_layout_v311"
+    };
+
+    const ISSUE_STATUS = {
+      ACTIVE: "active",
+      IGNORED: "ignored",
+      AUTO_FIXED: "auto-fixed"
+    };
+
+    const ISSUE_SEVERITY = {
+      ERROR: "error",
+      WARNING: "warning",
+      SUGGESTION: "suggestion"
+    };
+
+    const APP_STATE = {
+      theme: "light",
+      layout: "side",
+      inputText: "",
+      uiState: "empty",
+      session: null,
+      previousInputLinesSnapshot: []
+    };
+
+    const PRESETS = {
+      "apple-strict": {
+        name: "Apple Strict",
+        strictMode: true,
+        autoCapitalize: true
+      },
+      "apple-basic": {
+        name: "Apple Basic",
+        strictMode: false,
+        autoCapitalize: false
+      }
+    };
+
+    const LABEL_KEYWORDS = [
+      "Chorus", "Pre-Chorus", "Post-Chorus", "Refrain", "Refren",
+      "Verse", "Zwrotka", "Bridge", "Mostek", "Intro", "Wstęp",
+      "Outro", "Zakończenie", "Hook", "Instrumental", "Build",
+      "Build-up", "Breakdown", "Drop"
+    ];
+
+    const STRUCTURE_WORDS = [
+      "Verse", "Zwrotka", "Chorus", "Refren", "Bridge", "Mostek",
+      "Hook", "Intro", "Outro", "Pre-Chorus", "Post-Chorus", "Refrain"
+    ];
+
+    const TECHNICAL_PATTERNS = [
+      /ad-?lib/i,
+      /spoken/i,
+      /background vocals?/i,
+      /backing vocals?/i,
+      /harmonies?/i,
+      /double tracked/i,
+      /fade/i,
+      /female vocal/i,
+      /male vocal/i
+    ];
+
+    const METADATA_PATTERNS = [
+      /https?:\/\//i,
+      /\bwww\./i,
+      /\bspotify\b/i,
+      /\byoutube\b/i,
+      /\bapple music\b/i,
+      /\bwritten by\b/i,
+      /\bproduced by\b/i,
+      /\bcomposer\b/i,
+      /\blyrics by\b/i,
+      /\bpublisher\b/i,
+      /\bcopyright\b/i,
+      /©/,
+      /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i
+    ];
+
+    const INTERNAL_CAPS_EXCLUSIONS = new Set([
+      "I", "DJ", "TV", "ID", "UK", "USA", "EU", "AI", "BPM"
+    ]);
+
+    const CENSOR_SUGGESTIONS = {
+      "kurwa": [/^k\*+a$/i, /^ku\*+a$/i, /^kur\*+$/i],
+      "fuck": [/^f\*+k$/i, /^fu\*+$/i],
+      "shit": [/^sh\*+t$/i, /^s\*+t$/i],
+      "bitch": [/^b\*+ch$/i, /^bi\*+h$/i],
+      "ass": [/^a\*+$/i]
+    };
+
+    const labelRegex = new RegExp(
+      "^\\s*[\\[(]?" +
+      "(" + LABEL_KEYWORDS.map(escapeRegex).join("|") + ")" +
+      "(\\s+\\d+)?" +
+      "\\s*[\\])]?\\s*[:\\-–—]?\\s*$",
+      "i"
+    );
+
+    const structureExtraRegex = new RegExp(
+      "^\\s*(" + STRUCTURE_WORDS.map(escapeRegex).join("|") + ")(\\s+\\d+)?\\s*[:\\-–—]\\s*.+$",
+      "i"
+    );
+
+    const els = {
+      body: document.body,
+      presetSelect: document.getElementById("presetSelect"),
+      themeSelect: document.getElementById("themeSelect"),
+      sourceCleanupSelect: document.getElementById("sourceCleanupSelect"),
+      layoutSideBtn: document.getElementById("layoutSideBtn"),
+      layoutStackBtn: document.getElementById("layoutStackBtn"),
+      inputText: document.getElementById("inputText"),
+      outputView: document.getElementById("outputView"),
+      validateBtn: document.getElementById("validateBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      copyOutputBtn: document.getElementById("copyOutputBtn"),
+      copyReportBtn: document.getElementById("copyReportBtn"),
+      applySafeFixesBtn: document.getElementById("applySafeFixesBtn"),
+
+      inputLinesMeta: document.getElementById("inputLinesMeta"),
+      inputWordsMeta: document.getElementById("inputWordsMeta"),
+      outputLinesMeta: document.getElementById("outputLinesMeta"),
+      outputWordsMeta: document.getElementById("outputWordsMeta"),
+      lastValidatedMeta: document.getElementById("lastValidatedMeta"),
+
+      statusBox: document.getElementById("statusBox"),
+      statusName: document.getElementById("statusName"),
+      statusDesc: document.getElementById("statusDesc"),
+      summaryCountsBadge: document.getElementById("summaryCountsBadge"),
+      progressPercent: document.getElementById("progressPercent"),
+      progressFill: document.getElementById("progressFill"),
+
+      activeIssuesCard: document.getElementById("activeIssuesCard"),
+      errorsList: document.getElementById("errorsList"),
+      warningsList: document.getElementById("warningsList"),
+      suggestionsList: document.getElementById("suggestionsList"),
+      errorsCountBadge: document.getElementById("errorsCountBadge"),
+      warningsCountBadge: document.getElementById("warningsCountBadge"),
+      suggestionsCountBadge: document.getElementById("suggestionsCountBadge"),
+
+      autofixedList: document.getElementById("autofixedList"),
+      ignoredList: document.getElementById("ignoredList"),
+      autofixedCountLabel: document.getElementById("autofixedCountLabel"),
+      ignoredCountLabel: document.getElementById("ignoredCountLabel"),
+
+      statLabels: document.getElementById("statLabels"),
+      statWhitespace: document.getElementById("statWhitespace"),
+      statAuto: document.getElementById("statAuto"),
+      statIgnored: document.getElementById("statIgnored")
+    };
+
+    function escapeRegex(str) {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function normalizeNewlines(text) {
+      return String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    }
+
+    function lineCount(text) {
+      const normalized = normalizeNewlines(text);
+      if (!normalized.length) return 0;
+      return normalized.split("\n").length;
+    }
+
+    function wordCount(text) {
+      const words = String(text).trim().match(/\S+/g);
+      return words ? words.length : 0;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function nowTimeLabel() {
+      return new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+
+    function makeId(prefix = "id") {
+      return prefix + "_" + Math.random().toString(36).slice(2, 10);
+    }
+
+    function moveCursorToLine(textarea, lineNumber) {
+      const lines = textarea.value.split("\n");
+      let start = 0;
+      for (let i = 0; i < lineNumber - 1; i++) {
+        start += (lines[i] || "").length + 1;
+      }
+      const end = start + (lines[lineNumber - 1] || "").length;
+      textarea.focus();
+      textarea.setSelectionRange(start, end);
+      textarea.scrollTop = Math.max(0, (lineNumber - 3) * 22);
+    }
+
+    async function copyText(text, button, successLabel) {
+      if (!text) return;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const tmp = document.createElement("textarea");
+          tmp.value = text;
+          document.body.appendChild(tmp);
+          tmp.select();
+          document.execCommand("copy");
+          tmp.remove();
+        }
+        const prev = button.textContent;
+        button.textContent = successLabel;
+        button.classList.add("btn-success");
+        setTimeout(() => {
+          button.textContent = prev;
+          button.classList.remove("btn-success");
+        }, 1400);
+      } catch {
+        alert("Unable to copy text.");
+      }
+    }
+
+    function applySourceCleanupPreset(text, preset) {
+      let out = normalizeNewlines(text);
+
+      if (preset === "word") {
+        out = out.replace(/[“”„]/g, '"').replace(/[‘’]/g, "'").replace(/\u00A0/g, " ");
+      }
+      if (preset === "pdf") {
+        out = out.replace(/-\n/g, "").replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\u00A0/g, " ");
+      }
+      if (preset === "email") {
+        out = out.replace(/^>+\s?/gm, "").replace(/\bFrom:.*$/gim, "").replace(/\bSent:.*$/gim, "");
+      }
+      if (preset === "excel") {
+        out = out.replace(/\t/g, " ");
+      }
+      if (preset === "web") {
+        out = out.replace(/\u00A0/g, " ").replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+      }
+      if (preset === "cms") {
+        out = out.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&");
+      }
+
+      return out;
+    }
+
+    function detectScripts(line) {
+      return {
+        latin: (line.match(/\p{Script=Latin}/gu) || []).length,
+        cyrillic: (line.match(/\p{Script=Cyrillic}/gu) || []).length,
+        greek: (line.match(/\p{Script=Greek}/gu) || []).length
+      };
+    }
+
+    function removeTrailingPunctuation(line) {
+      return line.replace(/[.,;:]+$/, "");
+    }
+
+    function removeSpaceBeforePunctuation(line) {
+      return line.replace(/\s+([?!.,;:])/g, "$1");
+    }
+
+    function capitalizeFirst(line) {
+      if (!line) return line;
+      return line.charAt(0).toLocaleUpperCase("en") + line.slice(1);
+    }
+
+    function standardCase(line) {
+      if (!line) return line;
+      let out = line.toLocaleLowerCase("en");
+      out = capitalizeFirst(out);
+      out = out
+        .replace(/\bi\b/g, "I")
+        .replace(/\bi'm\b/g, "I'm")
+        .replace(/\bi’ve\b/g, "I’ve")
+        .replace(/\bi've\b/g, "I've")
+        .replace(/\bi’ll\b/g, "I’ll")
+        .replace(/\bi'll\b/g, "I'll")
+        .replace(/\bi’d\b/g, "I’d")
+        .replace(/\bi'd\b/g, "I'd");
+      return out;
+    }
+
+    function normalizeApostrophes(line) {
+      return line.replace(/[’`´]/g, "'");
+    }
+
+    function normalizeDashes(line) {
+      return line.replace(/[—–]/g, "-");
+    }
+
+    function normalizeMultiPunctuation(line) {
+      let out = line;
+      out = out.replace(/([!]){2,}/g, "!");
+      out = out.replace(/([?]){2,}/g, "?");
+      out = out.replace(/…/g, "...");
+      out = out.replace(/\.{4,}/g, "...");
+      return out;
+    }
+
+    function normalizeInternalCapsWords(line) {
+      return line.replace(/\b([A-ZĄĆĘŁŃÓŚŹŻ]{3,})\b/g, (match) => {
+        if (INTERNAL_CAPS_EXCLUSIONS.has(match)) return match;
+        return match.toLocaleLowerCase("en");
+      });
+    }
+
+    function debounce(fn, delay = 350) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    function detectCensorSuggestion(word) {
+      for (const [replacement, patterns] of Object.entries(CENSOR_SUGGESTIONS)) {
+        if (patterns.some(rx => rx.test(word))) return replacement;
+      }
+      return null;
+    }
+
+    function detectInternalCapsWords(line) {
+      const words = line.match(/\b[^\s]+\b/g) || [];
+      return words.filter((word, idx) => {
+        const clean = word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+        if (!clean) return false;
+        if (idx === 0) return false;
+        if (INTERNAL_CAPS_EXCLUSIONS.has(clean)) return false;
+        if (clean.length <= 2) return false;
+        return /^[A-ZĄĆĘŁŃÓŚŹŻ]{3,}$/.test(clean);
+      });
+    }
+
+    function createIssue({
+      type,
+      severity,
+      lineNumber = null,
+      lineText = "",
+      message,
+      availableActions = [],
+      metadata = {}
+    }) {
+      return {
+        id: makeId("issue"),
+        type,
+        severity,
+        status: ISSUE_STATUS.ACTIVE,
+        lineNumber,
+        lineText,
+        message,
+        availableActions,
+        metadata
+      };
+    }
+
+    function createAppliedFix(type, label, count = null) {
+      return {
+        id: makeId("fix"),
+        type,
+        label,
+        count,
+        status: ISSUE_STATUS.AUTO_FIXED
+      };
+    }
+
+    function issuePersistentKey(issue) {
+      return [
+        issue.type,
+        issue.lineNumber ?? "global",
+        issue.metadata?.censoredWord || "",
+        issue.metadata?.repeatCount || "",
+        issue.metadata?.lineAction || "",
+        issue.metadata?.globalAction || ""
+      ].join("|");
+    }
+
+    function createSession(rawInput, presetKey, sourceCleanupPreset) {
+      const session = {
+        id: makeId("session"),
+        createdAt: Date.now(),
+        createdAtLabel: nowTimeLabel(),
+        presetKey,
+        sourceCleanupPreset,
+        sourceInput: rawInput,
+        issues: [],
+        appliedFixes: [],
+        silentStats: {
+          labelsRemoved: 0,
+          whitespaceCleanups: 0,
+          spacingBeforePunctuationCleanups: 0,
+          unicodeNormalizations: 0,
+          blankLineReductions: 0
+        },
+        editorialActions: {
+          punctuationGlobalApplied: false,
+          apostrophesNormalized: false,
+          dashesNormalized: false
+        },
+        persistentReplacements: [],
+        removedOutputLines: new Set(),
+        capsLineFixes: new Set(),
+        internalCapsLineFixes: new Set(),
+        multiPuncLineFixes: new Set(),
+        userEditedLineNumbers: [],
+        renderedOutputLines: [],
+        outputText: "",
+        summary: null
+      };
+
+      rebuildSession(session);
+      return session;
+    }
+
+    function rebuildSession(session) {
+      const preset = PRESETS[session.presetKey] || PRESETS["apple-strict"];
+
+      const oldIgnoredKeys = new Set(
+        session.issues.filter(i => i.status === ISSUE_STATUS.IGNORED).map(issuePersistentKey)
+      );
+      const oldAutoFixedKeys = new Set(
+        session.issues.filter(i => i.status === ISSUE_STATUS.AUTO_FIXED).map(issuePersistentKey)
+      );
+
+      session.issues = [];
+      session.silentStats.labelsRemoved = 0;
+      session.silentStats.whitespaceCleanups = 0;
+      session.silentStats.spacingBeforePunctuationCleanups = 0;
+      session.silentStats.unicodeNormalizations = 0;
+      session.silentStats.blankLineReductions = 0;
+
+      const cleanedInput = applySourceCleanupPreset(session.sourceInput, session.sourceCleanupPreset);
+      const lines = normalizeNewlines(cleanedInput).split("\n");
+
+      let lowercaseStarts = 0;
+      let nonEmptyLines = 0;
+      let trailingPunctuationLineCount = 0;
+      const apostropheTypes = new Set();
+      const dashTypes = new Set();
+
+      const outputEntries = [];
+
+      lines.forEach((originalLine, index) => {
+        const lineNumber = index + 1;
+        const raw = originalLine;
+        let line = originalLine;
+
+        const beforeWhitespace = line;
+        line = line
+          .replace(/\u00A0/g, " ")
+          .replace(/\t/g, " ")
+          .replace(/[ ]{2,}/g, " ")
+          .trim();
+
+        if (line !== beforeWhitespace.trim()) {
+          session.silentStats.whitespaceCleanups++;
+        }
+
+        if (/\u00A0/.test(raw) || /[\u200B-\u200D\uFEFF]/.test(raw) || /\t/.test(raw)) {
+          session.silentStats.unicodeNormalizations++;
+        }
+
+        const beforePunctuationSpacing = line;
+        line = removeSpaceBeforePunctuation(line);
+        if (line !== beforePunctuationSpacing) {
+          session.silentStats.spacingBeforePunctuationCleanups++;
+        }
+
+        if (!line) {
+          outputEntries.push({ type: "blank", lineNumber });
+          return;
+        }
+
+        nonEmptyLines++;
+
+        if (/^[a-z]/.test(line)) lowercaseStarts++;
+        if (/[.,;:]$/.test(line)) trailingPunctuationLineCount++;
+
+        if (/[’]/.test(line)) apostropheTypes.add("curly");
+        if (/[']/ .test(line)) apostropheTypes.add("straight");
+        if (/[`´]/.test(line)) apostropheTypes.add("accent");
+
+        if (/[—]/.test(line)) dashTypes.add("em");
+        if (/[–]/.test(line)) dashTypes.add("en");
+        if (/-/.test(line)) dashTypes.add("hyphen");
+
+        if (labelRegex.test(line)) {
+          session.silentStats.labelsRemoved++;
+          outputEntries.push({ type: "label-removed", lineNumber, originalText: line });
+          return;
+        }
+
+        if (structureExtraRegex.test(line)) {
+          session.issues.push(createIssue({
+            type: "structure-annotation",
+            severity: ISSUE_SEVERITY.WARNING,
+            lineNumber,
+            lineText: line,
+            message: "Structural annotation detected in lyric line.",
+            availableActions: ["remove-line", "ignore"],
+            metadata: { lineAction: "remove-line" }
+          }));
+        }
+
+        const repeatMatch = line.match(/^(.+?)\s+x\s?(\d+)$/i);
+        if (repeatMatch) {
+          const repeatText = repeatMatch[1].trim();
+          const repeatCount = parseInt(repeatMatch[2], 10);
+          session.issues.push(createIssue({
+            type: "repeat",
+            severity: ISSUE_SEVERITY.ERROR,
+            lineNumber,
+            lineText: line,
+            message: `Repeat shortcut detected (x${repeatCount}).`,
+            availableActions: ["expand-repeat", "ignore"],
+            metadata: { repeatCount, repeatText }
+          }));
+        } else if (/(^|\s)(x\s?\d+|\d+\sx)(\s|$)/i.test(line)) {
+          session.issues.push(createIssue({
+            type: "repeat",
+            severity: ISSUE_SEVERITY.ERROR,
+            lineNumber,
+            lineText: line,
+            message: "Repeat shortcut detected, but the pattern is not safely expandable.",
+            availableActions: ["ignore"]
+          }));
+        }
+
+        const censoredWords = line.match(/\b[\p{L}\p{N}]*\*+[\p{L}\p{N}]*\b/giu) || [];
+        if (censoredWords.length) {
+          for (const word of censoredWords) {
+            const suggestion = detectCensorSuggestion(word);
+            session.issues.push(createIssue({
+              type: "censorship",
+              severity: ISSUE_SEVERITY.ERROR,
+              lineNumber,
+              lineText: line,
+              message: suggestion
+                ? `Censored word detected. Suggested replacement: "${suggestion}".`
+                : "Censored word detected.",
+              availableActions: ["replace-censorship", "ignore"],
+              metadata: { censoredWord: word, suggestion, currentReplacement: suggestion || "" }
+            }));
+          }
+        }
+
+        if (TECHNICAL_PATTERNS.some(rx => rx.test(line))) {
+          session.issues.push(createIssue({
+            type: "technical-note",
+            severity: ISSUE_SEVERITY.ERROR,
+            lineNumber,
+            lineText: line,
+            message: "Technical note detected.",
+            availableActions: ["remove-line", "ignore"],
+            metadata: { lineAction: "remove-line" }
+          }));
+        }
+
+        if (METADATA_PATTERNS.some(rx => rx.test(line))) {
+          session.issues.push(createIssue({
+            type: "metadata",
+            severity: ISSUE_SEVERITY.ERROR,
+            lineNumber,
+            lineText: line,
+            message: "Metadata or non-lyric content detected.",
+            availableActions: ["remove-line", "ignore"],
+            metadata: { lineAction: "remove-line" }
+          }));
+        }
+
+        if (/([!?]){2,}/.test(line) || /…/.test(line) || /\.{4,}/.test(line)) {
+          session.issues.push(createIssue({
+            type: "multi-punctuation",
+            severity: ISSUE_SEVERITY.WARNING,
+            lineNumber,
+            lineText: line,
+            message: "Multiple punctuation marks detected.",
+            availableActions: ["normalize-multi-punctuation", "ignore"]
+          }));
+        }
+
+        if (line.length > 85) {
+          session.issues.push(createIssue({
+            type: "long-line",
+            severity: ISSUE_SEVERITY.WARNING,
+            lineNumber,
+            lineText: line,
+            message: `Long line detected (${line.length} characters).`,
+            availableActions: ["ignore"]
+          }));
+        }
+
+        const letters = line.match(/\p{L}/gu) || [];
+        const upper = line.match(/\p{Lu}/gu) || [];
+        const isCapsHeavy = letters.length >= 4 && upper.length / letters.length > 0.8;
+
+        if (isCapsHeavy) {
+          session.issues.push(createIssue({
+            type: "caps-lock",
+            severity: ISSUE_SEVERITY.WARNING,
+            lineNumber,
+            lineText: line,
+            message: "Full uppercase line detected.",
+            availableActions: ["standard-case-line", "ignore"]
+          }));
+        }
+
+        if (!isCapsHeavy) {
+          const internalCapsWords = detectInternalCapsWords(line);
+          if (internalCapsWords.length > 0) {
+            session.issues.push(createIssue({
+              type: "internal-capitalization",
+              severity: ISSUE_SEVERITY.SUGGESTION,
+              lineNumber,
+              lineText: line,
+              message: `Unusual internal capitalization detected: ${internalCapsWords.join(", ")}`,
+              availableActions: ["normalize-internal-caps", "ignore"],
+              metadata: { words: internalCapsWords }
+            }));
+          }
+        }
+
+        const scripts = detectScripts(line);
+        const activeScripts = ["latin", "cyrillic", "greek"].filter(k => scripts[k] > 0);
+        if (activeScripts.length > 1) {
+          session.issues.push(createIssue({
+            type: "mixed-scripts",
+            severity: ISSUE_SEVERITY.WARNING,
+            lineNumber,
+            lineText: line,
+            message: "Mixed writing systems detected in one line.",
+            availableActions: ["ignore"]
+          }));
+        }
+
+        outputEntries.push({
+          type: "line",
+          lineNumber,
+          rawLine: line,
+          baseText: preset.autoCapitalize ? capitalizeFirst(line) : line
+        });
+      });
+
+      if (nonEmptyLines > 0) {
+        if (!preset.autoCapitalize && lowercaseStarts > 0 && lowercaseStarts < nonEmptyLines) {
+          session.issues.push(createIssue({
+            type: "capitalization-global",
+            severity: ISSUE_SEVERITY.WARNING,
+            lineNumber: null,
+            message: `Inconsistent line-start capitalization detected (${lowercaseStarts} affected lines).`,
+            availableActions: ["fix-capitalization-global", "ignore"],
+            metadata: { globalAction: "capitalization-global" }
+          }));
+        }
+
+        if (trailingPunctuationLineCount > 0) {
+          session.issues.push(createIssue({
+            type: "punctuation-global",
+            severity: ISSUE_SEVERITY.WARNING,
+            lineNumber: null,
+            message: `Trailing punctuation detected on line endings (${trailingPunctuationLineCount} affected lines).`,
+            availableActions: ["remove-punctuation-global", "ignore"],
+            metadata: { globalAction: "punctuation-global", softPenalty: true }
+          }));
+        }
+
+        if (apostropheTypes.size > 1) {
+          session.issues.push(createIssue({
+            type: "consistency-apostrophes",
+            severity: ISSUE_SEVERITY.SUGGESTION,
+            lineNumber: null,
+            message: "Inconsistent apostrophe styles detected.",
+            availableActions: ["normalize-apostrophes", "ignore"],
+            metadata: { globalAction: "normalize-apostrophes" }
+          }));
+        }
+
+        if (dashTypes.size > 1) {
+          session.issues.push(createIssue({
+            type: "consistency-dashes",
+            severity: ISSUE_SEVERITY.SUGGESTION,
+            lineNumber: null,
+            message: "Inconsistent dash styles detected.",
+            availableActions: ["normalize-dashes", "ignore"],
+            metadata: { globalAction: "normalize-dashes" }
+          }));
+        }
+      }
+
+      restoreIssueStatuses(session, oldIgnoredKeys, oldAutoFixedKeys);
+      rebuildRenderedOutput(session, outputEntries);
+      session.summary = buildSummary(session);
+    }
+
+    function restoreIssueStatuses(session, ignoredKeys, autoFixedKeys) {
+      for (const issue of session.issues) {
+        const key = issuePersistentKey(issue);
+        if (ignoredKeys.has(key)) {
+          issue.status = ISSUE_STATUS.IGNORED;
+        } else if (autoFixedKeys.has(key)) {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+        }
+      }
+    }
+
+    function applyLineTransforms(line, lineNumber, session) {
+      let out = line;
+
+      const replacementsForLine = session.persistentReplacements.filter(
+        r => r.lineNumber === lineNumber
+      );
+
+      if (replacementsForLine.length) {
+        for (const rep of replacementsForLine) {
+          const escaped = rep.originalToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          out = out.replace(new RegExp(escaped, "gi"), rep.replacementToken);
+        }
+      }
+
+      out = removeSpaceBeforePunctuation(out);
+
+      if (session.multiPuncLineFixes.has(lineNumber)) {
+        out = normalizeMultiPunctuation(out);
+      }
+
+      if (session.capsLineFixes.has(lineNumber)) {
+        out = standardCase(out);
+      }
+
+      if (session.internalCapsLineFixes.has(lineNumber)) {
+        out = normalizeInternalCapsWords(out);
+      }
+
+      const preset = PRESETS[session.presetKey] || PRESETS["apple-strict"];
+      if (preset.autoCapitalize && !session.capsLineFixes.has(lineNumber)) {
+        out = capitalizeFirst(out);
+      }
+
+      if (session.editorialActions.apostrophesNormalized) {
+        out = normalizeApostrophes(out);
+      }
+
+      if (session.editorialActions.dashesNormalized) {
+        out = normalizeDashes(out);
+      }
+
+      if (session.editorialActions.punctuationGlobalApplied) {
+        out = removeTrailingPunctuation(out);
+      }
+
+      return out;
+    }
+
+    function rebuildRenderedOutput(session, outputEntries) {
+      const lines = [];
+      const changedUserSet = new Set(session.userEditedLineNumbers || []);
+
+      for (const entry of outputEntries) {
+        if (entry.type === "blank") {
+          lines.push({ text: "", highlight: null });
+          continue;
+        }
+
+        if (entry.type === "label-removed") {
+          continue;
+        }
+
+        if (session.removedOutputLines.has(entry.lineNumber)) {
+          continue;
+        }
+
+        const repeatIssue = session.issues.find(issue =>
+          issue.type === "repeat" &&
+          issue.lineNumber === entry.lineNumber &&
+          issue.status === ISSUE_STATUS.AUTO_FIXED &&
+          issue.metadata?.repeatCount &&
+          issue.metadata?.repeatText
+        );
+
+        if (repeatIssue) {
+          for (let i = 0; i < repeatIssue.metadata.repeatCount; i++) {
+            const repeated = applyLineTransforms(repeatIssue.metadata.repeatText, entry.lineNumber, session);
+            lines.push({ text: repeated, highlight: "tool" });
+          }
+          continue;
+        }
+
+        const transformed = applyLineTransforms(entry.rawLine, entry.lineNumber, session);
+
+        const hasToolChange =
+          session.persistentReplacements.some(r => r.lineNumber === entry.lineNumber) ||
+          session.capsLineFixes.has(entry.lineNumber) ||
+          session.internalCapsLineFixes.has(entry.lineNumber) ||
+          session.multiPuncLineFixes.has(entry.lineNumber);
+
+        if (hasToolChange) {
+          lines.push({ text: transformed, highlight: "tool" });
+        } else if (changedUserSet.has(entry.lineNumber)) {
+          lines.push({ text: transformed, highlight: "user" });
+        } else {
+          lines.push({ text: transformed, highlight: null });
+        }
+      }
+
+      const collapsed = collapseExcessBlankLines(lines);
+      session.renderedOutputLines = collapsed.lines;
+      session.silentStats.blankLineReductions = collapsed.removed;
+      session.outputText = session.renderedOutputLines.map(l => l.text).join("\n").trim();
+    }
+
+    function collapseExcessBlankLines(lines) {
+      const out = [];
+      let blankStreak = 0;
+      let removed = 0;
+
+      for (const line of lines) {
+        if (!line.text.trim()) {
+          blankStreak++;
+          if (blankStreak <= 1) out.push(line);
+          else removed++;
+        } else {
+          blankStreak = 0;
+          out.push(line);
+        }
+      }
+
+      while (out.length && !out[out.length - 1].text.trim()) {
+        out.pop();
+        removed++;
+      }
+
+      return { lines: out, removed };
+    }
+
+    function buildSilentAutoFixEntries(session) {
+      const items = [];
+      if (session.silentStats.labelsRemoved > 0) {
+        items.push(createAppliedFix("labels", "Section labels removed", session.silentStats.labelsRemoved));
+      }
+      if (session.silentStats.whitespaceCleanups > 0) {
+        items.push(createAppliedFix("whitespace", "Whitespace normalized", session.silentStats.whitespaceCleanups));
+      }
+      if (session.silentStats.spacingBeforePunctuationCleanups > 0) {
+        items.push(createAppliedFix("punctuation-spacing", "Spaces before punctuation removed", session.silentStats.spacingBeforePunctuationCleanups));
+      }
+      if (session.silentStats.unicodeNormalizations > 0) {
+        items.push(createAppliedFix("unicode", "Hidden or non-standard characters normalized", session.silentStats.unicodeNormalizations));
+      }
+      if (session.silentStats.blankLineReductions > 0) {
+        items.push(createAppliedFix("blank-lines", "Excess blank lines reduced", session.silentStats.blankLineReductions));
+      }
+      return items;
+    }
+
+    function buildSummary(session) {
+      const active = session.issues.filter(i => i.status === ISSUE_STATUS.ACTIVE);
+      const ignored = session.issues.filter(i => i.status === ISSUE_STATUS.IGNORED);
+      const autoFixedIssues = session.issues.filter(i => i.status === ISSUE_STATUS.AUTO_FIXED);
+      const silentFixes = buildSilentAutoFixEntries(session);
+      const autoFixedCount = autoFixedIssues.length + session.appliedFixes.length + silentFixes.length;
+
+      const activeErrors = active.filter(i => i.severity === ISSUE_SEVERITY.ERROR).length;
+      const activeWarnings = active.filter(i => i.severity === ISSUE_SEVERITY.WARNING).length;
+      const activeSuggestions = active.filter(i => i.severity === ISSUE_SEVERITY.SUGGESTION).length;
+
+      let status = "pass";
+      if (activeErrors > 0) status = "fail";
+      else if (activeWarnings > 0) status = "review";
+
+      const totalIssues =
+        active.length +
+        ignored.length +
+        autoFixedIssues.length +
+        session.appliedFixes.length +
+        silentFixes.length;
+
+      const resolvedCount = ignored.length + autoFixedIssues.length + session.appliedFixes.length + silentFixes.length;
+      const completionPercent = totalIssues > 0 ? Math.round((resolvedCount / totalIssues) * 100) : 100;
+
+      return {
+        status,
+        activeErrors,
+        activeWarnings,
+        activeSuggestions,
+        ignoredCount: ignored.length,
+        autoFixedCount,
+        completionPercent
+      };
+    }
+
+    function ignoreIssue(issueId) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.ACTIVE) return;
+      issue.status = ISSUE_STATUS.IGNORED;
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function restoreIgnoredIssue(issueId) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.IGNORED) return;
+      issue.status = ISSUE_STATUS.ACTIVE;
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function expandRepeat(issueId) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.ACTIVE || issue.type !== "repeat") return;
+      issue.status = ISSUE_STATUS.AUTO_FIXED;
+      issue.metadata.correctedInOutput = true;
+      rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function removeOutputLine(issueId) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.ACTIVE || !issue.lineNumber) return;
+
+      APP_STATE.session.removedOutputLines.add(issue.lineNumber);
+      issue.status = ISSUE_STATUS.AUTO_FIXED;
+      issue.metadata.correctedInOutput = true;
+      issue.message = `${issue.message} Line removed from output.`;
+
+      rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function standardCaseLine(issueId) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.ACTIVE || !issue.lineNumber) return;
+
+      APP_STATE.session.capsLineFixes.add(issue.lineNumber);
+      issue.status = ISSUE_STATUS.AUTO_FIXED;
+      issue.metadata.correctedInOutput = true;
+
+      rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function normalizeInternalCapsLine(issueId) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.ACTIVE || !issue.lineNumber) return;
+
+      APP_STATE.session.internalCapsLineFixes.add(issue.lineNumber);
+      issue.status = ISSUE_STATUS.AUTO_FIXED;
+      issue.metadata.correctedInOutput = true;
+
+      rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function normalizeMultiPunctuationLine(issueId) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.ACTIVE || !issue.lineNumber) return;
+
+      APP_STATE.session.multiPuncLineFixes.add(issue.lineNumber);
+      issue.status = ISSUE_STATUS.AUTO_FIXED;
+      issue.metadata.correctedInOutput = true;
+
+      rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function fixCapitalizationGlobal(issueId = null) {
+      if (!APP_STATE.session) return;
+
+      APP_STATE.session.sourceInput = APP_STATE.session.sourceInput
+        .split("\n")
+        .map(line => line.trim() ? capitalizeFirst(removeSpaceBeforePunctuation(line.trim())) : line)
+        .join("\n");
+
+      APP_STATE.previousInputLinesSnapshot = normalizeNewlines(APP_STATE.session.sourceInput).split("\n");
+      els.inputText.value = APP_STATE.session.sourceInput;
+
+      if (issueId) {
+        const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+        if (issue) {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+        }
+      } else {
+        APP_STATE.session.appliedFixes.push(
+          createAppliedFix("capitalization-global", "Line-start capitalization normalized globally")
+        );
+      }
+
+      rebuildSession(APP_STATE.session);
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function applyReplacementToInput(text, lineNumber, originalToken, replacementToken) {
+      const lines = normalizeNewlines(text).split("\n");
+      const idx = lineNumber - 1;
+      if (!lines[idx]) return text;
+      const escaped = originalToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      lines[idx] = lines[idx].replace(new RegExp(escaped, "gi"), replacementToken);
+      return lines.join("\n");
+    }
+
+    function applyCensorshipReplacement(issueId, replacement) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.status !== ISSUE_STATUS.ACTIVE || issue.type !== "censorship") return;
+      if (!replacement || !replacement.trim()) return;
+
+      const existingIndex = APP_STATE.session.persistentReplacements.findIndex(r =>
+        r.lineNumber === issue.lineNumber &&
+        r.originalToken.toLowerCase() === issue.metadata.censoredWord.toLowerCase()
+      );
+
+      const record = {
+        lineNumber: issue.lineNumber,
+        originalToken: issue.metadata.censoredWord,
+        replacementToken: replacement.trim()
+      };
+
+      if (existingIndex >= 0) APP_STATE.session.persistentReplacements[existingIndex] = record;
+      else APP_STATE.session.persistentReplacements.push(record);
+
+      issue.metadata.currentReplacement = replacement.trim();
+      issue.status = ISSUE_STATUS.AUTO_FIXED;
+      issue.metadata.correctedInOutput = true;
+
+      APP_STATE.session.sourceInput = applyReplacementToInput(
+        APP_STATE.session.sourceInput,
+        issue.lineNumber,
+        issue.metadata.censoredWord,
+        replacement.trim()
+      );
+      els.inputText.value = APP_STATE.session.sourceInput;
+      APP_STATE.previousInputLinesSnapshot = normalizeNewlines(APP_STATE.session.sourceInput).split("\n");
+      APP_STATE.session.userEditedLineNumbers = Array.from(new Set([
+        ...(APP_STATE.session.userEditedLineNumbers || []),
+        issue.lineNumber
+      ]));
+
+      rebuildSession(APP_STATE.session);
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function normalizeApostrophesGlobal(issueId = null) {
+      if (!APP_STATE.session || APP_STATE.session.editorialActions.apostrophesNormalized) return;
+      APP_STATE.session.editorialActions.apostrophesNormalized = true;
+
+      if (issueId) {
+        const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+        if (issue) {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+        }
+      } else {
+        APP_STATE.session.appliedFixes.push(
+          createAppliedFix("apostrophes-global-tool", "Apostrophes normalized globally")
+        );
+      }
+
+      rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function normalizeDashesGlobal(issueId = null) {
+      if (!APP_STATE.session || APP_STATE.session.editorialActions.dashesNormalized) return;
+      APP_STATE.session.editorialActions.dashesNormalized = true;
+
+      if (issueId) {
+        const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+        if (issue) {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+        }
+      } else {
+        APP_STATE.session.appliedFixes.push(
+          createAppliedFix("dashes-global-tool", "Dashes normalized globally")
+        );
+      }
+
+      rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function applyAllSafeFixes() {
+      if (!APP_STATE.session) return;
+
+      for (const issue of APP_STATE.session.issues) {
+        if (issue.status !== ISSUE_STATUS.ACTIVE) continue;
+
+        if (issue.type === "repeat" && issue.metadata?.repeatText && issue.metadata?.repeatCount) {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+        }
+
+        if (issue.type === "capitalization-global") {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+          APP_STATE.session.sourceInput = APP_STATE.session.sourceInput
+            .split("\n")
+            .map(line => line.trim() ? capitalizeFirst(removeSpaceBeforePunctuation(line.trim())) : line)
+            .join("\n");
+          els.inputText.value = APP_STATE.session.sourceInput;
+          APP_STATE.previousInputLinesSnapshot = normalizeNewlines(APP_STATE.session.sourceInput).split("\n");
+        }
+
+        if (issue.type === "punctuation-global") {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+          APP_STATE.session.editorialActions.punctuationGlobalApplied = true;
+        }
+
+        if (issue.type === "censorship" && issue.metadata?.suggestion) {
+          const replacement = issue.metadata.suggestion;
+          const existingIndex = APP_STATE.session.persistentReplacements.findIndex(r =>
+            r.lineNumber === issue.lineNumber &&
+            r.originalToken.toLowerCase() === issue.metadata.censoredWord.toLowerCase()
+          );
+
+          const record = {
+            lineNumber: issue.lineNumber,
+            originalToken: issue.metadata.censoredWord,
+            replacementToken: replacement
+          };
+
+          if (existingIndex >= 0) APP_STATE.session.persistentReplacements[existingIndex] = record;
+          else APP_STATE.session.persistentReplacements.push(record);
+
+          APP_STATE.session.sourceInput = applyReplacementToInput(
+            APP_STATE.session.sourceInput,
+            issue.lineNumber,
+            issue.metadata.censoredWord,
+            replacement
+          );
+
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+        }
+
+        if (issue.type === "consistency-apostrophes") {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+          APP_STATE.session.editorialActions.apostrophesNormalized = true;
+        }
+
+        if (issue.type === "consistency-dashes") {
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+          APP_STATE.session.editorialActions.dashesNormalized = true;
+        }
+      }
+
+      els.inputText.value = APP_STATE.session.sourceInput;
+      APP_STATE.previousInputLinesSnapshot = normalizeNewlines(APP_STATE.session.sourceInput).split("\n");
+
+      rebuildSession(APP_STATE.session);
+      APP_STATE.session.summary = buildSummary(APP_STATE.session);
+      render();
+    }
+
+    function rebuildOutputEntriesFromSession() {
+      const preset = PRESETS[APP_STATE.session.presetKey] || PRESETS["apple-strict"];
+      const lines = normalizeNewlines(
+        applySourceCleanupPreset(APP_STATE.session.sourceInput, APP_STATE.session.sourceCleanupPreset)
+      ).split("\n");
+
+      const entries = [];
+
+      lines.forEach((originalLine, index) => {
+        const lineNumber = index + 1;
+        let line = originalLine
+          .replace(/\u00A0/g, " ")
+          .replace(/\t/g, " ")
+          .replace(/[ ]{2,}/g, " ")
+          .trim();
+
+        line = removeSpaceBeforePunctuation(line);
+
+        if (!line) {
+          entries.push({ type: "blank", lineNumber });
+          return;
+        }
+
+        if (labelRegex.test(line)) {
+          entries.push({ type: "label-removed", lineNumber, originalText: line });
+          return;
+        }
+
+        entries.push({
+          type: "line",
+          lineNumber,
+          rawLine: line,
+          baseText: preset.autoCapitalize ? capitalizeFirst(line) : line
+        });
+      });
+
+      return entries;
+    }
+
+    function buildReportText() {
+      const session = APP_STATE.session;
+      if (!session) return "No report available.";
+
+      const active = session.issues.filter(i => i.status === ISSUE_STATUS.ACTIVE);
+      const ignored = session.issues.filter(i => i.status === ISSUE_STATUS.IGNORED);
+      const autoFixedIssues = session.issues.filter(i => i.status === ISSUE_STATUS.AUTO_FIXED);
+      const silentFixes = buildSilentAutoFixEntries(session);
+
+      const block = (title, items) => {
+        if (!items.length) return `${title}\n- none\n`;
+        return `${title}\n` + items.map(i => {
+          const loc = i.lineNumber ? `Line ${i.lineNumber}: ` : "";
+          const preview = i.lineText ? ` | "${i.lineText}"` : "";
+          const note = i.metadata?.correctedInOutput ? " | corrected in output" : "";
+          const label = i.message || i.label || i.type;
+          const count = i.count ? ` | count: ${i.count}` : "";
+          return `- ${loc}${label}${preview}${note}${count}`;
+        }).join("\n") + "\n";
+      };
+
+      return [
+        "LYRICS VALIDATOR — REPORT",
+        "",
+        `Preset: ${session.presetKey}`,
+        `Source cleanup: ${session.sourceCleanupPreset}`,
+        `Last validated: ${session.createdAtLabel}`,
+        `Status: ${session.summary.status.toUpperCase()}`,
+        `Progress: ${session.summary.completionPercent}%`,
+        "",
+        `Active errors: ${session.summary.activeErrors}`,
+        `Active warnings: ${session.summary.activeWarnings}`,
+        `Active suggestions: ${session.summary.activeSuggestions}`,
+        `Ignored: ${session.summary.ignoredCount}`,
+        `Auto-fixed: ${session.summary.autoFixedCount}`,
+        "",
+        block("ACTIVE ISSUES", active),
+        block("AUTO-FIXED ISSUES", autoFixedIssues),
+        block("AUTO-FIXED SILENT CLEANUP", silentFixes),
+        block("AUTO-FIXED GLOBAL TOOLS", session.appliedFixes),
+        block("IGNORED", ignored),
+        "OUTPUT:",
+        session.outputText
+      ].join("\n");
+    }
+
+    function computeUIState() {
+      if (!els.inputText.value.trim()) return "empty";
+      if (!APP_STATE.session) return "ready";
+      return "validated";
+    }
+
+    function updateMeta() {
+      els.inputLinesMeta.textContent = `${lineCount(els.inputText.value)} lines`;
+      els.inputWordsMeta.textContent = `${wordCount(els.inputText.value)} words`;
+
+      const outputText = APP_STATE.session ? APP_STATE.session.outputText : "";
+      els.outputLinesMeta.textContent = `${lineCount(outputText)} lines`;
+      els.outputWordsMeta.textContent = `${wordCount(outputText)} words`;
+    }
+
+    function renderStatusBox() {
+      const uiState = computeUIState();
+
+      els.statusBox.className = "status-box";
+      els.statusName.className = "status-name";
+      els.statusDesc.className = "status-desc";
+
+      if (uiState === "empty" || uiState === "ready") {
+        els.statusBox.classList.add("ready", "status-ready");
+        els.statusName.textContent = "Ready";
+        els.statusDesc.textContent = "Paste lyrics and start validation.";
+        els.summaryCountsBadge.textContent = "0 Errors · 0 Warnings · 0 Suggestions";
+        els.progressPercent.textContent = "0%";
+        els.progressFill.style.width = "0%";
+        els.lastValidatedMeta.textContent = "No active session";
+        return;
+      }
+
+      const s = APP_STATE.session.summary;
+
+      els.statusBox.classList.add(s.status, `status-${s.status}`);
+
+      if (s.status === "fail") {
+        els.statusName.textContent = "Errors detected";
+        els.statusDesc.textContent = "Fix blocking issues before delivery.";
+      } else if (s.status === "review") {
+        els.statusName.textContent = "Review recommended";
+        els.statusDesc.textContent = "Some warnings require attention.";
+      } else {
+        els.statusName.textContent = "Lyrics ready";
+        els.statusDesc.textContent = "No blocking issues detected.";
+      }
+
+      els.summaryCountsBadge.textContent = `${s.activeErrors} Errors · ${s.activeWarnings} Warnings · ${s.activeSuggestions} Suggestions`;
+      els.progressPercent.textContent = `${s.completionPercent}%`;
+      els.progressFill.style.width = `${s.completionPercent}%`;
+      els.lastValidatedMeta.textContent = `Last validated: ${APP_STATE.session.createdAtLabel}`;
+    }
+
+    function createIssueCard(issue, resolvedMode = false) {
+      const div = document.createElement("div");
+      div.className = `issue ${resolvedMode ? issue.status : issue.severity}`;
+
+      const metaBits = [];
+      if (issue.lineNumber) metaBits.push(`Line ${issue.lineNumber}`);
+      metaBits.push(issue.type);
+
+      const previewHtml = issue.lineText
+        ? `<div class="issue-preview js-preview" data-line="${issue.lineNumber || ""}" data-focus-id="${issue.type === "censorship" && !resolvedMode ? issue.id : ""}">${escapeHtml(issue.lineText)}</div>`
+        : "";
+
+      const actions = [];
+
+      if (!resolvedMode) {
+        if (issue.type === "censorship" && issue.availableActions.includes("replace-censorship")) {
+          const currentValue = issue.metadata?.currentReplacement ?? issue.metadata?.suggestion ?? "";
+          actions.push(`
+            <div class="replace-field">
+              <input
+                type="text"
+                class="js-censor-inline-input"
+                data-id="${issue.id}"
+                value="${escapeHtml(currentValue)}"
+                placeholder="replacement…">
+              <button type="button" class="replace-clear js-censor-clear" data-id="${issue.id}" aria-label="Clear replacement">&times;</button>
+            </div>
+          `);
+          actions.push(`<button class="btn-primary js-replace-censor-inline" data-id="${issue.id}">Replace</button>`);
+          actions.push(`<button class="btn-ghost js-ignore" data-id="${issue.id}">Ignore</button>`);
+        } else {
+          if (issue.availableActions.includes("expand-repeat")) {
+            const label = issue.metadata?.repeatCount ? `Expand x${issue.metadata.repeatCount}` : "Expand";
+            actions.push(`<button class="btn-primary js-expand-repeat" data-id="${issue.id}">${label}</button>`);
+          }
+
+          if (issue.availableActions.includes("fix-capitalization-global")) {
+            actions.push(`<button class="btn-primary js-fix-cap-global" data-id="${issue.id}">Fix all capitalization</button>`);
+          }
+
+          if (issue.availableActions.includes("remove-punctuation-global")) {
+            actions.push(`<button class="btn-primary js-fix-punc-global" data-id="${issue.id}">Remove punctuation globally</button>`);
+          }
+
+          if (issue.availableActions.includes("remove-line")) {
+            actions.push(`<button class="btn-primary js-remove-line" data-id="${issue.id}">Remove line</button>`);
+          }
+
+          if (issue.availableActions.includes("standard-case-line")) {
+            actions.push(`<button class="btn-primary js-standard-case-line" data-id="${issue.id}">Convert to standard casing</button>`);
+          }
+
+          if (issue.availableActions.includes("normalize-internal-caps")) {
+            actions.push(`<button class="btn-primary js-normalize-internal-caps" data-id="${issue.id}">Normalize casing</button>`);
+          }
+
+          if (issue.availableActions.includes("normalize-multi-punctuation")) {
+            actions.push(`<button class="btn-primary js-normalize-multi-punc" data-id="${issue.id}">Normalize punctuation</button>`);
+          }
+
+          if (issue.availableActions.includes("normalize-apostrophes")) {
+            actions.push(`<button class="btn-primary js-normalize-apostrophes" data-id="${issue.id}">Normalize apostrophes</button>`);
+          }
+
+          if (issue.availableActions.includes("normalize-dashes")) {
+            actions.push(`<button class="btn-primary js-normalize-dashes" data-id="${issue.id}">Normalize dashes</button>`);
+          }
+
+          if (issue.availableActions.includes("ignore")) {
+            actions.push(`<button class="btn-ghost js-ignore" data-id="${issue.id}">Ignore</button>`);
+          }
+        }
+      } else {
+        if (issue.status === ISSUE_STATUS.IGNORED) {
+          actions.push(`<button class="btn-outline js-restore-ignored" data-id="${issue.id}">Restore</button>`);
+        }
+      }
+
+      div.innerHTML = `
+        <div class="issue-head">
+          <div class="issue-title">
+            <strong>${escapeHtml(issue.message)}</strong>
+            <div class="issue-meta">${metaBits.map(escapeHtml).join(" · ")}</div>
+            ${issue.metadata?.correctedInOutput ? `<span class="issue-note">Corrected in output</span>` : ""}
+          </div>
+        </div>
+        ${previewHtml}
+        <div class="issue-actions">${actions.join("") || `<span class="muted">No direct action.</span>`}</div>
+      `;
+
+      return div;
+    }
+
+    function createAppliedFixCard(fix) {
+      const div = document.createElement("div");
+      div.className = "issue auto-fixed";
+      div.innerHTML = `
+        <div class="issue-head">
+          <div class="issue-title">
+            <strong>${escapeHtml(fix.label)}${fix.count ? ` ×${fix.count}` : ""}</strong>
+            <div class="issue-meta">${escapeHtml(fix.type)} · auto-fixed</div>
+          </div>
+        </div>
+      `;
+      return div;
+    }
+
+    function renderIssueGroup(container, items, emptyText, resolvedMode = false) {
+      container.innerHTML = "";
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "muted";
+        empty.textContent = emptyText;
+        container.appendChild(empty);
+        return;
+      }
+
+      items.forEach(item => container.appendChild(createIssueCard(item, resolvedMode)));
+    }
+
+    function renderCountBadge(el, count) {
+      el.textContent = String(count);
+      el.classList.toggle("hidden", count === 0);
+    }
+
+    function renderReport() {
+      const session = APP_STATE.session;
+      if (!session) {
+        renderIssueGroup(els.errorsList, [], "No active errors.");
+        renderIssueGroup(els.warningsList, [], "No active warnings.");
+        renderIssueGroup(els.suggestionsList, [], "No active suggestions.");
+        renderIssueGroup(els.autofixedList, [], "No auto-fixed issues in this session.");
+        renderIssueGroup(els.ignoredList, [], "No ignored issues in this session.", true);
+
+        renderCountBadge(els.errorsCountBadge, 0);
+        renderCountBadge(els.warningsCountBadge, 0);
+        renderCountBadge(els.suggestionsCountBadge, 0);
+        els.autofixedCountLabel.textContent = "0";
+        els.ignoredCountLabel.textContent = "0";
+        els.activeIssuesCard.classList.remove("pass-tint");
+        return;
+      }
+
+      const activeErrors = session.issues.filter(i => i.status === ISSUE_STATUS.ACTIVE && i.severity === ISSUE_SEVERITY.ERROR);
+      const activeWarnings = session.issues.filter(i => i.status === ISSUE_STATUS.ACTIVE && i.severity === ISSUE_SEVERITY.WARNING);
+      const activeSuggestions = session.issues.filter(i => i.status === ISSUE_STATUS.ACTIVE && i.severity === ISSUE_SEVERITY.SUGGESTION);
+      const autoFixedIssues = session.issues.filter(i => i.status === ISSUE_STATUS.AUTO_FIXED);
+      const ignored = session.issues.filter(i => i.status === ISSUE_STATUS.IGNORED);
+      const silentFixes = buildSilentAutoFixEntries(session);
+
+      renderIssueGroup(els.errorsList, activeErrors, "No active errors.");
+      renderIssueGroup(els.warningsList, activeWarnings, "No active warnings.");
+      renderIssueGroup(els.suggestionsList, activeSuggestions, "No active suggestions.");
+
+      els.autofixedList.innerHTML = "";
+      const combinedAutoCount = autoFixedIssues.length + session.appliedFixes.length + silentFixes.length;
+      if (!combinedAutoCount) {
+        const empty = document.createElement("div");
+        empty.className = "muted";
+        empty.textContent = "No auto-fixed issues in this session.";
+        els.autofixedList.appendChild(empty);
+      } else {
+        silentFixes.forEach(fix => els.autofixedList.appendChild(createAppliedFixCard(fix)));
+        autoFixedIssues.forEach(issue => els.autofixedList.appendChild(createIssueCard(issue, true)));
+        session.appliedFixes.forEach(fix => els.autofixedList.appendChild(createAppliedFixCard(fix)));
+      }
+
+      renderIssueGroup(els.ignoredList, ignored, "No ignored issues in this session.", true);
+
+      renderCountBadge(els.errorsCountBadge, activeErrors.length);
+      renderCountBadge(els.warningsCountBadge, activeWarnings.length);
+      renderCountBadge(els.suggestionsCountBadge, activeSuggestions.length);
+      els.autofixedCountLabel.textContent = String(combinedAutoCount);
+      els.ignoredCountLabel.textContent = String(ignored.length);
+
+      els.activeIssuesCard.classList.toggle("pass-tint", APP_STATE.session.summary.status === "pass");
+    }
+
+    function renderStats() {
+      const session = APP_STATE.session;
+      if (!session) {
+        els.statLabels.textContent = "0";
+        els.statWhitespace.textContent = "0";
+        els.statAuto.textContent = "0";
+        els.statIgnored.textContent = "0";
+        return;
+      }
+
+      els.statLabels.textContent = String(session.silentStats.labelsRemoved);
+      els.statWhitespace.textContent = String(
+        session.silentStats.whitespaceCleanups +
+        session.silentStats.spacingBeforePunctuationCleanups +
+        session.silentStats.unicodeNormalizations +
+        session.silentStats.blankLineReductions
+      );
+      els.statAuto.textContent = String(session.summary.autoFixedCount);
+      els.statIgnored.textContent = String(session.summary.ignoredCount);
+    }
+
+    function renderButtons() {
+      const hasSession = Boolean(APP_STATE.session);
+      els.validateBtn.textContent = hasSession ? "Revalidate" : "Validate lyrics";
+      els.validateBtn.className = hasSession ? "btn-primary alt" : "btn-primary";
+      els.applySafeFixesBtn.disabled = !hasSession;
+      els.applySafeFixesBtn.title = hasSession ? "" : "Available after validation";
+    }
+
+    function renderOutput() {
+      const session = APP_STATE.session;
+      els.outputView.innerHTML = "";
+
+      if (!session || !session.renderedOutputLines.length) {
+        els.outputView.innerHTML = `<div class="output-empty">Validated output will appear here.</div>`;
+        return;
+      }
+
+      session.renderedOutputLines.forEach(line => {
+        const div = document.createElement("div");
+        div.className = "output-line";
+        if (line.highlight === "tool") div.classList.add("changed-tool");
+        if (line.highlight === "user") div.classList.add("changed-user");
+        div.textContent = line.text || " ";
+        els.outputView.appendChild(div);
+      });
+    }
+
+    function renderLayoutButtons() {
+      const isSide = APP_STATE.layout === "side";
+      els.layoutSideBtn.classList.toggle("active", isSide);
+      els.layoutStackBtn.classList.toggle("active", !isSide);
+    }
+
+    function render() {
+      updateMeta();
+      renderStatusBox();
+      renderOutput();
+      renderReport();
+      renderStats();
+      renderButtons();
+      renderLayoutButtons();
+      updateMeta();
+    }
+
+    function startValidation() {
+      const rawInput = els.inputText.value;
+      if (!rawInput.trim()) return;
+
+      const preset = els.presetSelect.value || "apple-strict";
+      const cleanupPreset = els.sourceCleanupSelect.value || "none";
+
+      APP_STATE.session = createSession(rawInput, preset, cleanupPreset);
+      APP_STATE.previousInputLinesSnapshot = normalizeNewlines(rawInput).split("\n");
+      render();
+    }
+
+    function clearAll() {
+      APP_STATE.session = null;
+      APP_STATE.previousInputLinesSnapshot = [];
+      els.inputText.value = "";
+      render();
+    }
+
+    function handleInputChanged() {
+      APP_STATE.inputText = els.inputText.value;
+
+      if (!els.inputText.value.trim()) {
+        APP_STATE.session = null;
+        render();
+        return;
+      }
+
+      if (!APP_STATE.session) {
+        render();
+        return;
+      }
+
+      const newLines = normalizeNewlines(els.inputText.value).split("\n");
+      const oldLines = APP_STATE.previousInputLinesSnapshot || [];
+      const changed = [];
+
+      const max = Math.max(newLines.length, oldLines.length);
+      for (let i = 0; i < max; i++) {
+        if ((newLines[i] || "") !== (oldLines[i] || "")) {
+          changed.push(i + 1);
+        }
+      }
+
+      APP_STATE.session.sourceInput = els.inputText.value;
+      APP_STATE.session.userEditedLineNumbers = changed;
+      APP_STATE.previousInputLinesSnapshot = newLines;
+
+      liveRebuildSession();
+    }
+
+    const liveRebuildSession = debounce(() => {
+      if (!APP_STATE.session) return;
+      rebuildSession(APP_STATE.session);
+      render();
+    }, 350);
+
+    function handleCensorInputChange(issueId, value) {
+      if (!APP_STATE.session) return;
+      const issue = APP_STATE.session.issues.find(i => i.id === issueId);
+      if (!issue || issue.type !== "censorship") return;
+      issue.metadata.currentReplacement = value;
+    }
+
+    function setLayout(mode) {
+      APP_STATE.layout = mode;
+      els.body.setAttribute("data-layout", mode);
+      localStorage.setItem(STORAGE_KEYS.layout, mode);
+      renderLayoutButtons();
+    }
+
+    function bindDynamicActions() {
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        if (target.classList.contains("js-ignore")) {
+          ignoreIssue(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-restore-ignored")) {
+          restoreIgnoredIssue(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-expand-repeat")) {
+          expandRepeat(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-fix-cap-global")) {
+          fixCapitalizationGlobal(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-fix-punc-global")) {
+          const issue = APP_STATE.session?.issues.find(i => i.id === target.dataset.id);
+          if (!issue || issue.status !== ISSUE_STATUS.ACTIVE) return;
+          APP_STATE.session.editorialActions.punctuationGlobalApplied = true;
+          issue.status = ISSUE_STATUS.AUTO_FIXED;
+          issue.metadata.correctedInOutput = true;
+          rebuildRenderedOutput(APP_STATE.session, rebuildOutputEntriesFromSession());
+          APP_STATE.session.summary = buildSummary(APP_STATE.session);
+          render();
+        }
+
+        if (target.classList.contains("js-preview")) {
+          const line = parseInt(target.dataset.line, 10);
+          if (Number.isFinite(line) && line > 0) {
+            moveCursorToLine(els.inputText, line);
+          }
+          const focusId = target.dataset.focusId;
+          if (focusId) {
+            setTimeout(() => {
+              const input = document.querySelector(`.js-censor-inline-input[data-id="${focusId}"]`);
+              if (input) input.focus();
+            }, 30);
+          }
+        }
+
+        if (target.classList.contains("js-censor-clear")) {
+          const id = target.dataset.id;
+          const input = document.querySelector(`.js-censor-inline-input[data-id="${id}"]`);
+          if (input) {
+            input.value = "";
+            handleCensorInputChange(id, "");
+            input.focus();
+          }
+        }
+
+        if (target.classList.contains("js-replace-censor-inline")) {
+          const id = target.dataset.id;
+          const input = document.querySelector(`.js-censor-inline-input[data-id="${id}"]`);
+          const value = input ? input.value : "";
+          applyCensorshipReplacement(id, value);
+        }
+
+        if (target.classList.contains("js-remove-line")) {
+          removeOutputLine(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-standard-case-line")) {
+          standardCaseLine(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-normalize-internal-caps")) {
+          normalizeInternalCapsLine(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-normalize-multi-punc")) {
+          normalizeMultiPunctuationLine(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-normalize-apostrophes")) {
+          normalizeApostrophesGlobal(target.dataset.id);
+        }
+
+        if (target.classList.contains("js-normalize-dashes")) {
+          normalizeDashesGlobal(target.dataset.id);
+        }
+      });
+
+      document.addEventListener("input", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement)) return;
+        if (target.classList.contains("js-censor-inline-input")) {
+          handleCensorInputChange(target.dataset.id, target.value);
+        }
+      });
+    }
+
+    function loadTheme() {
+      const savedTheme = localStorage.getItem(STORAGE_KEYS.theme) || "light";
+      APP_STATE.theme = savedTheme;
+      els.body.setAttribute("data-theme", savedTheme);
+      els.themeSelect.value = savedTheme;
+    }
+
+    function saveTheme(theme) {
+      APP_STATE.theme = theme;
+      els.body.setAttribute("data-theme", theme);
+      localStorage.setItem(STORAGE_KEYS.theme, theme);
+    }
+
+    function loadLayout() {
+      const savedLayout = localStorage.getItem(STORAGE_KEYS.layout) || "side";
+      APP_STATE.layout = savedLayout;
+      els.body.setAttribute("data-layout", savedLayout);
+      renderLayoutButtons();
+    }
+
+    function init() {
+      loadTheme();
+      loadLayout();
+
+      els.presetSelect.value = "apple-strict";
+      els.sourceCleanupSelect.value = "none";
+
+      els.themeSelect.addEventListener("change", () => {
+        saveTheme(els.themeSelect.value);
+      });
+
+      els.layoutSideBtn.addEventListener("click", () => setLayout("side"));
+      els.layoutStackBtn.addEventListener("click", () => setLayout("stacked"));
+
+      els.validateBtn.addEventListener("click", startValidation);
+      els.clearBtn.addEventListener("click", clearAll);
+      els.inputText.addEventListener("input", handleInputChanged);
+
+      els.copyOutputBtn.addEventListener("click", () => {
+        const text = APP_STATE.session ? APP_STATE.session.outputText : "";
+        copyText(text, els.copyOutputBtn, "Copied!");
+      });
+
+      els.copyReportBtn.addEventListener("click", () => {
+        copyText(buildReportText(), els.copyReportBtn, "Report copied!");
+      });
+
+      els.applySafeFixesBtn.addEventListener("click", applyAllSafeFixes);
+
+      bindDynamicActions();
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="1536.000000pt"
+   height="1024.000000pt"
+   viewBox="0 0 1536.000000 1024.000000"
+   preserveAspectRatio="xMidYMid meet"
+   id="svg6"
+   sodipodi:docname="lyricsvalidator-logo.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="pt"
+     inkscape:zoom="0.29553223"
+     inkscape:cx="1147.083"
+     inkscape:cy="482.18091"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g6" />
+  <g
+     transform="translate(0.000000,1024.000000) scale(0.100000,-0.100000)"
+     fill="#000000"
+     stroke="none"
+     id="g6">
+    <g
+       id="g7"
+       transform="matrix(3.08673,0,0,2.9781912,-16790.027,-11516.041)"
+       style="fill:#4f6bed;fill-opacity:1">
+      <path
+         d="m 10075,7251 c -22,-10 -52,-31 -66,-47 -14,-16 -108,-153 -209,-304 -102,-151 -257,-383 -346,-515 -90,-132 -265,-392 -390,-578 -182,-270 -230,-335 -240,-325 -6,7 -56,76 -110,153 -54,77 -107,147 -118,155 -38,28 -81,38 -166,39 -109,1 -151,-11 -189,-55 -26,-29 -31,-43 -31,-85 0,-28 5,-60 12,-72 6,-12 65,-98 131,-192 67,-93 158,-224 204,-290 47,-66 97,-130 113,-143 72,-56 198,-69 286,-28 75,35 6,-62 899,1256 581,858 553,810 521,908 -39,118 -184,177 -301,123 z"
+         id="path1"
+         style="fill:#4f6bed;fill-opacity:1" />
+      <path
+         d="m 5542,6860 c -52,-32 -63,-72 -61,-223 1,-156 11,-194 58,-221 32,-18 56,-19 548,-21 489,-1 515,-1 524,17 8,14 -3,46 -45,141 -123,277 -126,281 -198,312 -32,13 -97,15 -415,15 -361,0 -379,-1 -411,-20 z"
+         id="path2"
+         style="fill:#4f6bed;fill-opacity:1" />
+      <path
+         d="m 6850,6873 c -29,-11 -50,-36 -50,-61 0,-13 50,-130 111,-259 60,-129 136,-291 168,-361 122,-266 378,-818 517,-1115 80,-170 217,-465 305,-656 89,-190 168,-361 176,-379 21,-45 64,-86 116,-111 37,-18 62,-21 173,-21 119,0 134,2 180,25 57,29 58,30 218,285 262,418 296,474 296,491 0,37 -20,40 -268,37 -280,-4 -252,8 -339,-134 -32,-51 -61,-93 -64,-94 -9,0 -6,-7 -497,1040 -101,217 -216,463 -254,545 -38,83 -85,184 -105,225 -19,41 -76,163 -125,270 -50,107 -100,206 -112,219 -46,51 -87,61 -266,60 -91,0 -172,-3 -180,-6 z"
+         id="path3"
+         style="fill:#4f6bed;fill-opacity:1" />
+      <path
+         d="m 5539,6025 c -48,-26 -59,-68 -59,-222 0,-158 11,-194 70,-225 33,-17 75,-18 727,-18 615,0 693,2 707,16 9,8 16,19 16,24 0,23 -183,407 -201,423 -20,16 -64,17 -628,17 -505,-1 -610,-3 -632,-15 z"
+         id="path4"
+         style="fill:#4f6bed;fill-opacity:1" />
+      <path
+         d="m 5539,5195 c -48,-26 -59,-68 -59,-220 0,-153 11,-195 61,-220 43,-23 1811,-22 1829,0 11,13 -2,49 -76,213 -49,108 -99,207 -111,220 l -22,22 h -798 c -671,-1 -802,-3 -824,-15 z"
+         id="path5"
+         style="fill:#4f6bed;fill-opacity:1" />
+      <path
+         d="m 5565,4375 c -40,-14 -74,-48 -76,-75 0,-8 -1,-81 -2,-161 -1,-164 5,-183 66,-213 32,-15 131,-16 1097,-16 712,0 1068,3 1081,10 11,6 19,21 19,35 0,13 -39,110 -87,214 -68,146 -94,193 -113,202 -19,8 -274,12 -985,15 -809,3 -966,1 -1000,-11 z"
+         id="path6"
+         style="fill:#4f6bed;fill-opacity:1" />
+    </g>
+  </g>
+</svg>
