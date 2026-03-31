@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lyrics Validator v3.1.1</title>
+  <title>Lyrics Validator v3.2</title>
   <style>
     :root {
       --bg: #f5f7fa;
@@ -390,6 +390,38 @@
       min-width: 150px;
     }
 
+    .drop-zone {
+      position: relative;
+    }
+
+    .drop-zone.drag-active textarea,
+    .drop-zone.drag-active .drop-zone-target {
+      border-color: var(--primary);
+      box-shadow: var(--focus-ring);
+      background: var(--primary-soft);
+    }
+
+    .drop-zone-overlay {
+      position: absolute;
+      inset: 54px 14px 76px 14px;
+      border: 2px dashed var(--primary);
+      border-radius: 14px;
+      background: rgba(79, 107, 237, 0.08);
+      color: var(--primary);
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .drop-zone.drag-active .drop-zone-overlay {
+      display: flex;
+    }
+
     .status-box {
       border-radius: 16px;
       border: 1px solid var(--border);
@@ -773,11 +805,6 @@
       color: var(--muted);
     }
 
-    .active-issues-card.pass-tint {
-      background: var(--success-soft);
-      border-color: rgba(47, 191, 113, 0.24);
-    }
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -915,6 +942,10 @@
       .replace-field input {
         width: 100%;
       }
+
+      .drop-zone-overlay {
+        inset: 54px 10px 76px 10px;
+      }
     }
   </style>
 </head>
@@ -957,7 +988,7 @@
     <div class="layout">
       <div class="workspace">
         <div class="col">
-          <div class="card-2">
+          <div class="card-2 drop-zone" id="inputDropZone">
             <div class="toolbar">
               <h2 style="margin:0;">Input</h2>
               <div class="meta">
@@ -967,7 +998,9 @@
               </div>
             </div>
 
-            <textarea id="inputText" placeholder="Paste lyrics"></textarea>
+            <div class="drop-zone-overlay" id="dropZoneOverlay">Drop TXT or DOCX to import</div>
+
+            <textarea id="inputText" placeholder="Paste lyrics or drop TXT / DOCX"></textarea>
 
             <div class="actions-row">
               <button class="btn-primary" id="validateBtn">Validate lyrics</button>
@@ -1033,7 +1066,7 @@
 
             <div class="actions-row">
               <button class="btn-secondary" id="copyOutputBtn">Copy output</button>
-              <button class="btn-outline" id="copyReportBtn">Copy report</button>
+              <button class="btn-outline" id="downloadTxtBtn">Download TXT</button>
             </div>
           </div>
         </div>
@@ -1163,10 +1196,11 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script>
     const STORAGE_KEYS = {
-      theme: "lyrics_validator_theme_v311",
-      layout: "lyrics_validator_workspace_layout_v311"
+      theme: "lyrics_validator_theme_v32",
+      layout: "lyrics_validator_workspace_layout_v32"
     };
 
     const ISSUE_STATUS = {
@@ -1187,7 +1221,8 @@
       inputText: "",
       uiState: "empty",
       session: null,
-      previousInputLinesSnapshot: []
+      previousInputLinesSnapshot: [],
+      dragCounter: 0
     };
 
     const PRESETS = {
@@ -1275,12 +1310,14 @@
       sourceCleanupSelect: document.getElementById("sourceCleanupSelect"),
       layoutSideBtn: document.getElementById("layoutSideBtn"),
       layoutStackBtn: document.getElementById("layoutStackBtn"),
+      inputDropZone: document.getElementById("inputDropZone"),
+      dropZoneOverlay: document.getElementById("dropZoneOverlay"),
       inputText: document.getElementById("inputText"),
       outputView: document.getElementById("outputView"),
       validateBtn: document.getElementById("validateBtn"),
       clearBtn: document.getElementById("clearBtn"),
       copyOutputBtn: document.getElementById("copyOutputBtn"),
-      copyReportBtn: document.getElementById("copyReportBtn"),
+      downloadTxtBtn: document.getElementById("downloadTxtBtn"),
       applySafeFixesBtn: document.getElementById("applySafeFixesBtn"),
 
       inputLinesMeta: document.getElementById("inputLinesMeta"),
@@ -1390,6 +1427,21 @@
       } catch {
         alert("Unable to copy text.");
       }
+    }
+
+    function downloadOutputTxt() {
+      const text = APP_STATE.session ? APP_STATE.session.outputText : "";
+      if (!text) return;
+
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lyrics-validator-output.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     }
 
     function applySourceCleanupPreset(text, preset) {
@@ -2622,7 +2674,6 @@
         renderCountBadge(els.suggestionsCountBadge, 0);
         els.autofixedCountLabel.textContent = "0";
         els.ignoredCountLabel.textContent = "0";
-        els.activeIssuesCard.classList.remove("pass-tint");
         return;
       }
 
@@ -2657,8 +2708,6 @@
       renderCountBadge(els.suggestionsCountBadge, activeSuggestions.length);
       els.autofixedCountLabel.textContent = String(combinedAutoCount);
       els.ignoredCountLabel.textContent = String(ignored.length);
-
-      els.activeIssuesCard.classList.toggle("pass-tint", APP_STATE.session.summary.status === "pass");
     }
 
     function renderStats() {
@@ -2688,6 +2737,7 @@
       els.validateBtn.className = hasSession ? "btn-primary alt" : "btn-primary";
       els.applySafeFixesBtn.disabled = !hasSession;
       els.applySafeFixesBtn.title = hasSession ? "" : "Available after validation";
+      els.downloadTxtBtn.disabled = !APP_STATE.session || !APP_STATE.session.outputText;
     }
 
     function renderOutput() {
@@ -2724,6 +2774,57 @@
       renderButtons();
       renderLayoutButtons();
       updateMeta();
+    }
+
+    function resetSessionWithInput(text) {
+      APP_STATE.session = null;
+      APP_STATE.previousInputLinesSnapshot = [];
+      APP_STATE.inputText = text;
+      els.inputText.value = normalizeNewlines(text);
+      render();
+    }
+
+    async function importDroppedFile(file) {
+      if (!file) return;
+
+      const name = file.name.toLowerCase();
+
+      try {
+        let text = "";
+
+        if (name.endsWith(".txt")) {
+          text = await file.text();
+        } else if (name.endsWith(".docx")) {
+          if (!window.mammoth) {
+            alert("DOCX import is not available because the reader library is missing.");
+            return;
+          }
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await window.mammoth.extractRawText({ arrayBuffer });
+          text = result.value || "";
+        } else {
+          alert("Unsupported file type. Drop a TXT or DOCX file.");
+          return;
+        }
+
+        resetSessionWithInput(text);
+      } catch (error) {
+        console.error(error);
+        if (name.endsWith(".docx")) {
+          alert("Could not read this DOCX file.");
+        } else {
+          alert("Could not read this file.");
+        }
+      } finally {
+        setDropZoneActive(false);
+      }
+    }
+
+    function setDropZoneActive(isActive) {
+      els.inputDropZone.classList.toggle("drag-active", isActive);
+      if (!isActive) {
+        APP_STATE.dragCounter = 0;
+      }
     }
 
     function startValidation() {
@@ -2894,6 +2995,40 @@
       });
     }
 
+    function bindDropZone() {
+      const zone = els.inputDropZone;
+
+      zone.addEventListener("dragenter", (event) => {
+        event.preventDefault();
+        APP_STATE.dragCounter += 1;
+        setDropZoneActive(true);
+      });
+
+      zone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+        setDropZoneActive(true);
+      });
+
+      zone.addEventListener("dragleave", (event) => {
+        event.preventDefault();
+        APP_STATE.dragCounter = Math.max(0, APP_STATE.dragCounter - 1);
+        if (APP_STATE.dragCounter === 0) {
+          setDropZoneActive(false);
+        }
+      });
+
+      zone.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        APP_STATE.dragCounter = 0;
+        setDropZoneActive(false);
+
+        const files = event.dataTransfer?.files;
+        if (!files || !files.length) return;
+        await importDroppedFile(files[0]);
+      });
+    }
+
     function loadTheme() {
       const savedTheme = localStorage.getItem(STORAGE_KEYS.theme) || "light";
       APP_STATE.theme = savedTheme;
@@ -2937,12 +3072,11 @@
         copyText(text, els.copyOutputBtn, "Copied!");
       });
 
-      els.copyReportBtn.addEventListener("click", () => {
-        copyText(buildReportText(), els.copyReportBtn, "Report copied!");
-      });
+      els.downloadTxtBtn.addEventListener("click", downloadOutputTxt);
 
       els.applySafeFixesBtn.addEventListener("click", applyAllSafeFixes);
 
+      bindDropZone();
       bindDynamicActions();
       render();
     }
